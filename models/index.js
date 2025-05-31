@@ -1,12 +1,30 @@
+// models/index.js
 const { Sequelize } = require('sequelize');
 const path = require('path');
 
-// Initialize Sequelize with SQLite
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: path.join(__dirname, '../database.sqlite'),
-  logging: false // Set to console.log to see SQL queries
-});
+// Database configuration
+let sequelize;
+
+if (process.env.DATABASE_URL) {
+  // Production environment (Render)
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'postgres',
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    },
+    logging: false
+  });
+} else {
+  // Development environment (local)
+  sequelize = new Sequelize({
+    dialect: 'sqlite',
+    storage: path.join(__dirname, '../database.sqlite'),
+    logging: false
+  });
+}
 
 // Test the connection
 const testConnection = async () => {
